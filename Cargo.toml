@@ -1,0 +1,6 @@
+[package]
+name = "bytevec"
+version = "0.1.0"
+authors = ["Fernando Ulloa <fjulloap23@gmail.com>"]
+
+[dependencies]
