@@ -1,6 +1,6 @@
 [package]
 name = "bytevec"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Fernando Ulloa <fjulloap23@gmail.com>"]
 description = "A Rust serialization library that uses byte vectors"
 license = "Apache-2.0/MIT"

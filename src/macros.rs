@@ -98,7 +98,7 @@ macro_rules! bytevec_impls {
                         })
                     } else {
                         Err($crate::errors::ByteVecError::BadSizeDecodeError {
-                            wanted: $crate::errors::BVWantedSize::MoreThan(
+                            wanted: $crate::errors::BVWantedSize::EqualTo(
                                 4 * sizes.len() as u32 + body_size),
                             actual: bytes.len() as u32
                         })
