@@ -5,7 +5,7 @@ use bytevec::{ByteEncodable, ByteDecodable};
 
 #[test]
 fn test_serialize_vec() {
-    bytevec_impls! {
+    bytevec_decl! {
         #[derive(PartialEq, Eq, Debug)]
         struct Employee {
             id: u32,
@@ -47,7 +47,7 @@ fn test_serialize_vec() {
 }
 
 
-bytevec_impls! {
+bytevec_decl! {
     #[derive(PartialEq, Eq, Debug)]
     struct MeetingsLog {
         id: u32,

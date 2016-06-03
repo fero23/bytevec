@@ -102,7 +102,7 @@ let vec = <Vec<String>>::decode(&bytes).unwrap();
 assert_eq!(vec, slice);
 ```
 
-###The `bytevec_impls` macro
+###The `bytevec_decl` macro
 This macro allows the user to declare an arbitrary number of structures that
 automatically implement both the `ByteEncodable` and `ByteDecodable` traits,
 as long as all of the fields also implement both traits.
@@ -113,9 +113,9 @@ extern crate bytevec;
 
 use bytevec::{ByteEncodable, ByteDecodable};
 
-bytevec_impls! {
+bytevec_decl! {
     #[derive(PartialEq, Eq, Debug)]
-    struct Point {
+    pub struct Point {
         x: u32,
         y: u32
     }
@@ -125,6 +125,49 @@ fn main() {
     let p1 = Point {x: 32, y: 436};
     let bytes = p1.encode().unwrap();
     let p2 = Point::decode(&bytes).unwrap();
+    assert_eq!(p1, p2);
+}
+```
+
+###The `bytevec_impls` macro
+
+This macro implements both the `ByteEncodable` and `ByteDecodable` traits
+for the given `struct` definitions. This macro does not declare the `struct`
+definitions, the user should either declare them separately or use the
+`bytevec_decl` trait.
+
+This trait also allows the user to create a partial implementation of the
+serialization operations for a select number of the fields of the 
+structure. If the actual definition of the `struct` has more fields than
+the one provided to the macro, only the listed fields in the macro invocation
+will be serialized and deserialized. In the deserialization process, the
+rest of the fields of the `struct` will be initialized using the value
+returned from the [`Default::default()`] method.
+
+```rust
+#[macro_use]
+extern crate bytevec;
+
+use bytevec::{ByteEncodable, ByteDecodable};
+
+#[derive(PartialEq, Eq, Debug, Default)]
+struct Vertex3d {
+    x: u32,
+    y: u32,
+    z: u32
+}
+
+bytevec_impls! {
+    struct Vertex3d {
+        x: u32,
+        y: u32
+    }
+}
+
+fn main() {
+    let p1 = Vertex3d {x: 32, y: 436, z: 0};
+    let bytes = p1.encode().unwrap();
+    let p2 = Vertex3d::decode(&bytes).unwrap();
     assert_eq!(p1, p2);
 }
 ```
@@ -140,6 +183,7 @@ of a small crate with no dependencies.
 This library is distributed under both the MIT license and the Apache License (Version 2.0).
 You are free to use any of them as you see fit.
 
+[`Default::default()`]: http://doc.rust-lang.org/stable/std/default/trait.Default.html#tymethod.default
 [`std::mem::transmute`]: http://doc.rust-lang.org/stable/std/mem/fn.transmute.html
 [rustc_serialize]: https://github.com/rust-lang-nursery/rustc-serialize
 [serde]: https://github.com/serde-rs/serde

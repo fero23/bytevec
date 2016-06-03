@@ -27,7 +27,7 @@
 //! goes `Ok`, we will be able to get a byte vector value that represents the 
 //! original data structure.
 //! 
-//! bytevec doesn't actually do a 1-1 conversion of the bytes of the original
+//! bytevec doesn't actually do a 1:1 conversion of the bytes of the original
 //! type instance, as not every Rust type is stored on the stack. For any type
 //! that wraps a heap stored value, it will give a representation of the 
 //! underlying value.
