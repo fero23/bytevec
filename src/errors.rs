@@ -8,8 +8,8 @@ use self::BVWantedSize::*;
 
 #[derive(Debug, Clone, Copy)]
 pub enum BVWantedSize {
-    MoreThan(u32),
-    EqualTo(u32),
+    MoreThan(usize),
+    EqualTo(usize),
 }
 
 #[derive(Debug, Clone)]
@@ -17,7 +17,7 @@ pub enum ByteVecError {
     StringDecodeUtf8Error(Utf8Error),
     BadSizeDecodeError {
         wanted: BVWantedSize,
-        actual: u32,
+        actual: usize,
     },
     OverflowError,
 }

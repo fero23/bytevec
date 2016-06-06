@@ -1,18 +1,20 @@
 use traits::{ByteEncodable, ByteDecodable};
 use errors::{ByteVecError, BVWantedSize};
 use std::mem::transmute;
-use {BVEncodeResult, BVDecodeResult};
+use {BVEncodeResult, BVDecodeResult, BVSize};
 use std::mem::size_of;
 
 macro_rules! impl_integrals {
     {$($t:ty : $size:expr),*} => {
         $(
             impl ByteEncodable for $t {
-                fn get_size(&self) -> Option<u32> {
-                    Some($size)
+                fn get_size<Size>(&self) -> Option<Size> where Size: BVSize + ByteEncodable {
+                    Some(Size::from_usize($size))
                 }
 
-                fn encode(&self) -> BVEncodeResult<Vec<u8>> {
+                fn encode<Size>(&self) -> BVEncodeResult<Vec<u8>>
+                    where Size: BVSize + ByteEncodable
+                {
                     unsafe {
                         let bytes: [u8; $size] = transmute(self.to_be());
                         Ok(bytes.to_vec())
@@ -21,7 +23,9 @@ macro_rules! impl_integrals {
             }
 
             impl ByteDecodable for $t {
-                fn decode(bytes: &[u8]) -> BVDecodeResult<$t> {
+                fn decode<Size>(bytes: &[u8]) -> BVDecodeResult<$t>
+                    where Size: BVSize + ByteDecodable
+                {
                     if bytes.len() == $size {
                         let mut t_bytes = [0u8; $size];
                         for (b, s) in (&mut t_bytes).into_iter().zip(bytes) {
@@ -30,8 +34,8 @@ macro_rules! impl_integrals {
                         unsafe { Ok(<$t>::from_be(transmute(t_bytes))) }
                     } else {
                         Err(ByteVecError::BadSizeDecodeError {
-                            wanted: BVWantedSize::EqualTo($size),
-                            actual: bytes.len() as u32
+                            wanted: BVWantedSize::EqualTo($size as usize),
+                            actual: bytes.len()
                         })
                     }
                 }
@@ -55,21 +59,27 @@ macro_rules! as_unsized_impl {
     {$($t:ty : $unsizd:ty),*} => {
         $(
             impl ByteEncodable for $t {
-                fn get_size(&self) -> Option<u32> {
-                    Some(size_of::<$t>() as u32)
+                fn get_size<Size>(&self) -> Option<Size>
+                    where Size: BVSize + ByteEncodable
+                {
+                    Some(Size::from_usize(size_of::<$t>()))
                 }
 
-                fn encode(&self) -> BVEncodeResult<Vec<u8>> {
+                fn encode<Size>(&self) -> BVEncodeResult<Vec<u8>>
+                    where Size: BVSize + ByteEncodable
+                {
                     unsafe {
                         let unsigned: $unsizd = transmute(*self);
-                        unsigned.encode()
+                        unsigned.encode::<Size>()
                     }
                 }
             }
 
             impl ByteDecodable for $t {
-                fn decode(bytes: &[u8]) -> BVDecodeResult<$t> {
-                    let unsigned = try!(<$unsizd>::decode(bytes));
+                fn decode<Size>(bytes: &[u8]) -> BVDecodeResult<$t>
+                    where Size: BVSize + ByteDecodable
+                {
+                    let unsigned = try!(<$unsizd>::decode::<Size>(bytes));
                     unsafe { Ok(transmute(unsigned)) }
                 }
             }
@@ -84,26 +94,32 @@ as_unsized_impl! {
 }
 
 impl ByteEncodable for usize {
-    fn get_size(&self) -> Option<u32> {
-        Some(size_of::<usize>() as u32)
+    fn get_size<Size>(&self) -> Option<Size>
+        where Size: BVSize + ByteEncodable
+    {
+        Some(Size::from_usize(size_of::<usize>()))
     }
 
-    fn encode(&self) -> BVEncodeResult<Vec<u8>> {
+    fn encode<Size>(&self) -> BVEncodeResult<Vec<u8>>
+        where Size: BVSize + ByteEncodable
+    {
         match size_of::<usize>() {
-            2 => (*self as u16).encode(),
-            4 => (*self as u32).encode(),
-            8 => (*self as u64).encode(),
+            2 => (*self as u16).encode::<Size>(),
+            4 => (*self as u32).encode::<Size>(),
+            8 => (*self as u64).encode::<Size>(),
             _ => panic!("unknown size for usize"),
         }
     }
 }
 
 impl ByteDecodable for usize {
-    fn decode(bytes: &[u8]) -> BVDecodeResult<usize> {
+    fn decode<Size>(bytes: &[u8]) -> BVDecodeResult<usize>
+        where Size: BVSize + ByteDecodable
+    {
         Ok(match size_of::<usize>() {
-            2 => try!(u16::decode(bytes)) as usize,
-            4 => try!(u32::decode(bytes)) as usize,
-            8 => try!(u64::decode(bytes)) as usize,
+            2 => try!(u16::decode::<Size>(bytes)).as_usize(),
+            4 => try!(u32::decode::<Size>(bytes)).as_usize(),
+            8 => try!(u64::decode::<Size>(bytes)).as_usize(),
             _ => panic!("unknown size for usize"),
         })
     }

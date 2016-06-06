@@ -41,8 +41,8 @@ fn test_serialize_vec() {
             dept: "wrestling".to_string()
         }
     ];
-    let bytes = employees_1.encode().unwrap();
-    let employees_2 = Vec::<Employee>::decode(&bytes).unwrap();
+    let bytes = employees_1.encode::<u32>().unwrap();
+    let employees_2 = Vec::<Employee>::decode::<u32>(&bytes).unwrap();
     assert_eq!(employees_1, employees_2);
 }
 
@@ -59,8 +59,8 @@ bytevec_decl! {
 #[test]
 fn test_serialize_slices() {
     let slice = &['1', '2', '3'];
-    let bytes = slice.encode().unwrap();
-    let vec = Vec::<char>::decode(&bytes).unwrap();
+    let bytes = slice.encode::<u32>().unwrap();
+    let vec = Vec::<char>::decode::<u32>(&bytes).unwrap();
     assert_eq!(vec, slice);
 }
 
@@ -70,9 +70,17 @@ fn test_serialize_set() {
     set_1.insert(("One!".to_string(), 1u32));
     set_1.insert(("Two!".to_string(), 2));
     set_1.insert(("Three!".to_string(), 3));
-    let bytes = set_1.encode().unwrap();
-    let set_2 = std::collections::HashSet::decode(&bytes).unwrap();
+    let bytes = set_1.encode::<u32>().unwrap();
+    let set_2 = std::collections::HashSet::decode::<u32>(&bytes).unwrap();
     assert_eq!(set_1, set_2);
+}
+
+#[test]
+fn test_serialize_tuple() {
+    let pair1 = ("Hello".to_string(), "World".to_string());
+    let bytes = pair1.encode::<u8>().unwrap();
+    let pair2 = <(String, String)>::decode::<u8>(&bytes).unwrap();
+    assert_eq!(pair1, pair2);
 }
 
 #[test]
@@ -80,8 +88,8 @@ fn test_serialize_map() {
     let mut classes_1 = std::collections::HashMap::new();
     classes_1.insert(101usize, "Programming 1".to_string());
     classes_1.insert(102, "Basic CS".to_string());
-    let bytes = classes_1.encode().unwrap();
-    let classes_2 = std::collections::HashMap::decode(&bytes).unwrap();
+    let bytes = classes_1.encode::<u32>().unwrap();
+    let classes_2 = std::collections::HashMap::decode::<u32>(&bytes).unwrap();
     assert_eq!(classes_1, classes_2);
 }
 
@@ -110,7 +118,7 @@ fn test_serialize_slice_with_map_containers() {
         }
     ];
      
-    let bytes = slice.encode().unwrap();
-    let vec = Vec::<MeetingsLog>::decode(&bytes).unwrap();
+    let bytes = slice.encode::<u64>().unwrap();
+    let vec = <Vec<MeetingsLog>>::decode::<u64>(&bytes).unwrap();
     assert_eq!(vec, slice);
 }

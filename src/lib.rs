@@ -111,8 +111,8 @@
 //! # use bytevec::{ByteEncodable, ByteDecodable};
 //! # fn main() {
 //! let slice = &["Rust", "Is", "Awesome!"];
-//! let bytes = slice.encode().unwrap();
-//! let vec = <Vec<String>>::decode(&bytes).unwrap();
+//! let bytes = slice.encode::<u32>().unwrap();
+//! let vec = <Vec<String>>::decode::<u32>(&bytes).unwrap();
 //! assert_eq!(vec, slice);
 //! # }
 //! ```
@@ -127,3 +127,4 @@ mod impls;
 pub use traits::{ByteEncodable, ByteDecodable};
 pub type BVEncodeResult<T> = Result<T, errors::ByteVecError>;
 pub type BVDecodeResult<T> = Result<T, errors::ByteVecError>;
+pub use impls::BVSize;

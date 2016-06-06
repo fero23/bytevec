@@ -97,8 +97,8 @@ type of the underlying elements.
 
 ```rust
 let slice = &["Rust", "Is", "Awesome!"];
-let bytes = slice.encode().unwrap();
-let vec = <Vec<String>>::decode(&bytes).unwrap();
+let bytes = slice.encode::<u32>().unwrap();
+let vec = <Vec<String>>::decode::<u32>(&bytes).unwrap();
 assert_eq!(vec, slice);
 ```
 
@@ -123,8 +123,8 @@ bytevec_decl! {
 
 fn main() {
     let p1 = Point {x: 32, y: 436};
-    let bytes = p1.encode().unwrap();
-    let p2 = Point::decode(&bytes).unwrap();
+    let bytes = p1.encode::<u32>().unwrap();
+    let p2 = Point::decode::<u32>(&bytes).unwrap();
     assert_eq!(p1, p2);
 }
 ```
@@ -166,8 +166,8 @@ bytevec_impls! {
 
 fn main() {
     let p1 = Vertex3d {x: 32, y: 436, z: 0};
-    let bytes = p1.encode().unwrap();
-    let p2 = Vertex3d::decode(&bytes).unwrap();
+    let bytes = p1.encode::<u32>().unwrap();
+    let p2 = Vertex3d::decode::<u32>(&bytes).unwrap();
     assert_eq!(p1, p2);
 }
 ```
