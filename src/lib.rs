@@ -62,21 +62,31 @@
 //! 
 //! - For a primitive type such as the integral types, floating points
 //! or char that have fixed size, it will just grab the bytes and put them 
-//! on a `u8` buffer of the same length as the size of the type through
+//! on a `u8` buffer of the same length as the size of the type through 
 //! [`std::mem::transmute`][1]. These types are converted to and from little endian on
 //! serialization and deserialization respectively.
 //! 
 //! - String and str don't store their byte count, it's up to their container (if any)
 //! to store the size of the byte buffer of the string.
 //! 
+//! - Complex data structures such as `struct`s, tuples and collections need to store
+//! the sizes of their underlying data fields. These sizes are stored as values of a generic
+//! integral type parameter `Size` that should be provided in every call of the methods of the
+//! `ByteEncodable` and `ByteDecodable` traits. This type parameter is propagated to the
+//! serialization and deserialization operations of the contained data fields. The type parameter
+//! `Size` is constrained by the `BVSize` trait. Currently the types that implement this trait
+//! are `u8`, `u16`, `u32` and `u64`. Users should select the type for the `Size` type parameter
+//! according to the expected size of the byte buffer. If the expected size exceeds the 
+//! 2<sup>32</sup> byte length limit of `u32`, use `u64` instead.
+//! 
 //! - For structures with defined fields such as a custom `struct` or a tuple,
-//! it will store the size of each field on an `u32` value in order at the start
+//! it will store the size of each field on a sequence of `Size` values at the start
 //! of the slice segment for the structure, followed by the actual bytes of 
 //! the values of the fields.
 //! 
 //! - For any collection with variable length, it will first store the length
-//! (in elements, not byte count) on an `u32` value, followed by the byte count
-//! (yes, in `u32`) of each element, and then the actual values of the elements.
+//! (in elements, not byte count) on a `Size` value, followed by the byte count
+//! (yes, of `Size`) of each element, and then the actual values of the elements.
 //! All of this done in order, order is important, the same order of serialization
 //! is the order of deserialization.
 //! 
@@ -92,15 +102,21 @@
 //! in a `BVDecodeResult`. If the size doesn't match, or if some other conversion problem 
 //! arises, it will yield a `ByteVecError` detailing the failure.
 //! 
-//!  Almost all of the out of the box implementations of `ByteEncodable` also
-//!  implement `ByteDecodable`, but some of them, particularly the slices and 
-//!  the tuple references don't make sense when deserialized, as they can't
-//!  point to the original data they were referencing. This is usually a problem
-//!  that requires some tweaking, but bytevec allows data conversion from byte
-//!  buffers that were originally referenced data to a new instance of an owned data type,
-//!  as long as the size requirements are the same. This way, slice data can
-//!  be assigned to a `Vec` instance for example, as long as they share the same 
-//!  type of the underlying elements.
+//! Almost all of the out of the box implementations of `ByteEncodable` also
+//! implement `ByteDecodable`, but some of them, particularly the slices and 
+//! the tuple references don't make sense when deserialized, as they can't
+//! point to the original data they were referencing. This is usually a problem
+//! that requires some tweaking, but bytevec allows data conversion from byte
+//! buffers that were originally referenced data to a new instance of an owned data type,
+//! as long as the size requirements are the same. This way, slice data can
+//! be assigned to a `Vec` instance for example, as long as they share the same 
+//! type of the underlying elements.
+//! 
+//! The `ByteDecodable` trait also provides the `decode_max` method, which like `decode`, it
+//! accepts the byte buffer to deserialize, but additionally, this method also accepts
+//! a `limit` argument. This parameter is compared to the length of the `u8` buffer and
+//! if the buffer length is greater than it, it will return a `BadSizeDecodeError`,
+//! otherwise it will return the result of `decode` on the byte buffer.
 //! 
 //! ###Example: Serialization and deserialization of a slice
 //! 

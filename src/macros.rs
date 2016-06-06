@@ -11,7 +11,8 @@
 /// the one provided to the macro, only the listed fields in the macro invocation
 /// will be serialized and deserialized. In the deserialization process, the
 /// rest of the fields of the `struct` will be initialized using the value
-/// returned from the [`Default::default()`][1] method.
+/// returned from the [`Default::default()`][1] method, so the `struct` must 
+/// implement [`Default`][2].
 ///
 /// # Examples
 ///
@@ -43,6 +44,7 @@
 /// }
 /// ```
 /// [1]: http://doc.rust-lang.org/stable/std/default/trait.Default.html#tymethod.default
+/// [2]: http://doc.rust-lang.org/stable/std/default/trait.Default.html
 #[macro_export]
 macro_rules! bytevec_impls {
     {$(impl $name:ident {$($field:ident : $t:ty),*})*} => {

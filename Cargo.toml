@@ -7,6 +7,6 @@ license = "Apache-2.0/MIT"
 repository = "https://github.com/fero23/bytevec"
 documentation = "http://fero23.github.io/doc/bytevec/"
 readme = "README.md"
-keywords = ["serializing", "byte", "vector", "binary"]
+keywords = ["serialization", "deserialization", "byte", "vector", "binary"]
 
 [dependencies]
