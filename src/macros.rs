@@ -29,7 +29,7 @@
 /// }
 ///
 /// bytevec_impls! {
-///     struct Vertex3d {
+///     impl Vertex3d {
 ///         x: u32,
 ///         y: u32
 ///     }
@@ -45,7 +45,7 @@
 /// [1]: http://doc.rust-lang.org/stable/std/default/trait.Default.html#tymethod.default
 #[macro_export]
 macro_rules! bytevec_impls {
-    {$(struct $name:ident {$($field:ident : $t:ty),*})*} => {
+    {$(impl $name:ident {$($field:ident : $t:ty),*})*} => {
         $(
             impl $crate::ByteEncodable for $name
             {
@@ -175,7 +175,7 @@ macro_rules! bytevec_decl {
             struct $name {
                 $($field: $t),*
             }
-            bytevec_impls!(struct $name {$($field:$t),*});
+            bytevec_impls!(impl $name {$($field:$t),*});
         )*
     };
 
@@ -186,7 +186,7 @@ macro_rules! bytevec_decl {
             pub struct $name {
                 $(pub $field: $t),*
             }
-            bytevec_impls!(struct $name {$($field:$t),*});
+            bytevec_impls!(impl $name {$($field:$t),*});
         )*
     };
 
@@ -197,7 +197,7 @@ macro_rules! bytevec_decl {
             pub struct $name {
                 $($field: $t),*
             }
-            bytevec_impls!(struct $name {$($field:$t),*});
+            bytevec_impls!(impl $name {$($field:$t),*});
         )*
     };
 }

@@ -158,7 +158,7 @@ struct Vertex3d {
 }
 
 bytevec_impls! {
-    struct Vertex3d {
+    impl Vertex3d {
         x: u32,
         y: u32
     }
