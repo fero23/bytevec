@@ -63,7 +63,7 @@
 //! - For a primitive type such as the integral types, floating points
 //! or char that have fixed size, it will just grab the bytes and put them 
 //! on a `u8` buffer of the same length as the size of the type through
-//! [`std::mem::transmute`][1]. These types are converted to and from big endian on
+//! [`std::mem::transmute`][1]. These types are converted to and from little endian on
 //! serialization and deserialization respectively.
 //! 
 //! - String and str don't store their byte count, it's up to their container (if any)

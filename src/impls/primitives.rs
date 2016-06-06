@@ -16,7 +16,7 @@ macro_rules! impl_integrals {
                     where Size: BVSize + ByteEncodable
                 {
                     unsafe {
-                        let bytes: [u8; $size] = transmute(self.to_be());
+                        let bytes: [u8; $size] = transmute(self.to_le());
                         Ok(bytes.to_vec())
                     }
                 }
@@ -31,7 +31,7 @@ macro_rules! impl_integrals {
                         for (b, s) in (&mut t_bytes).into_iter().zip(bytes) {
                             *b = *s;
                         }
-                        unsafe { Ok(<$t>::from_be(transmute(t_bytes))) }
+                        unsafe { Ok(<$t>::from_le(transmute(t_bytes))) }
                     } else {
                         Err(ByteVecError::BadSizeDecodeError {
                             wanted: BVWantedSize::EqualTo($size as usize),
