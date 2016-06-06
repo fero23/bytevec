@@ -102,7 +102,7 @@ macro_rules! bytevec_impls {
                         }
                         else {
                             return Err($crate::errors::ByteVecError::BadSizeDecodeError {
-                                wanted: $crate::errors::BVWantedSize::MoreThan(
+                                expected: $crate::errors::BVExpectedSize::MoreThan(
                                     Size::get_size_of().as_usize() + index),
                                 actual: bytes.len()
                             });
@@ -125,7 +125,7 @@ macro_rules! bytevec_impls {
                         })
                     } else {
                         Err($crate::errors::ByteVecError::BadSizeDecodeError {
-                            wanted: $crate::errors::BVWantedSize::EqualTo(
+                            expected: $crate::errors::BVExpectedSize::EqualTo(
                                 Size::get_size_of().as_usize() * sizes.len() + body_size),
                             actual: bytes.len()
                         })

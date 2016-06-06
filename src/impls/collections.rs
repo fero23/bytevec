@@ -1,5 +1,5 @@
 use traits::{ByteEncodable, ByteDecodable};
-use errors::{ByteVecError, BVWantedSize};
+use errors::{ByteVecError, BVExpectedSize};
 use {BVEncodeResult, BVDecodeResult, BVSize};
 use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
@@ -23,7 +23,7 @@ macro_rules! validate_collection {
                     $ret
                 } else {
                     Err(ByteVecError::BadSizeDecodeError {
-                        wanted: BVWantedSize::EqualTo(
+                        expected: BVExpectedSize::EqualTo(
                             Size::get_size_of().as_usize() + sizes_len + body_size),
                         actual: $byte_vec.len()
                     })
@@ -31,13 +31,13 @@ macro_rules! validate_collection {
             }
             else {
                 Err(ByteVecError::BadSizeDecodeError {
-                    wanted: BVWantedSize::MoreThan(Size::get_size_of().as_usize() + sizes_len),
+                    expected: BVExpectedSize::MoreThan(Size::get_size_of().as_usize() + sizes_len),
                     actual: $byte_vec.len()
                 })
             }
         } else {
             Err(ByteVecError::BadSizeDecodeError {
-                wanted: BVWantedSize::MoreThan(Size::get_size_of().as_usize()),
+                expected: BVExpectedSize::MoreThan(Size::get_size_of().as_usize()),
                 actual: $byte_vec.len()
             })
         }
@@ -277,7 +277,7 @@ macro_rules! tuple_impls {
                 }
                 else {
                     return Err(ByteVecError::BadSizeDecodeError {
-                        wanted: BVWantedSize::MoreThan(Size::get_size_of().as_usize()),
+                        expected: BVExpectedSize::MoreThan(Size::get_size_of().as_usize()),
                         actual: bytes.len()
                     });
                 }
@@ -285,7 +285,7 @@ macro_rules! tuple_impls {
                     Ok((try!($t::decode::<Size>(&bytes[Size::get_size_of().as_usize()..])),))
                 } else {
                     Err(ByteVecError::BadSizeDecodeError {
-                        wanted: BVWantedSize::EqualTo(
+                        expected: BVExpectedSize::EqualTo(
                             Size::get_size_of().as_usize() + size.as_usize()),
                         actual: bytes.len()
                     })
@@ -375,7 +375,7 @@ macro_rules! tuple_impls {
                 }
                 else {
                     return Err(ByteVecError::BadSizeDecodeError {
-                        wanted: BVWantedSize::MoreThan(Size::get_size_of().as_usize() + index),
+                        expected: BVExpectedSize::MoreThan(Size::get_size_of().as_usize() + index),
                         actual: bytes.len()
                     });
                 }
@@ -388,7 +388,7 @@ macro_rules! tuple_impls {
                     }
                     else {
                         return Err(ByteVecError::BadSizeDecodeError {
-                            wanted: BVWantedSize::MoreThan(Size::get_size_of().as_usize() + index),
+                            expected: BVExpectedSize::MoreThan(Size::get_size_of().as_usize() + index),
                             actual: bytes.len()
                         });
                     }
@@ -412,7 +412,7 @@ macro_rules! tuple_impls {
                     ))
                 } else {
                     Err(ByteVecError::BadSizeDecodeError {
-                        wanted: BVWantedSize::EqualTo(
+                        expected: BVExpectedSize::EqualTo(
                             Size::get_size_of().as_usize() * sizes.len() + body_size),
                         actual: bytes.len()
                     })

@@ -122,3 +122,16 @@ fn test_serialize_slice_with_map_containers() {
     let vec = <Vec<MeetingsLog>>::decode::<u64>(&bytes).unwrap();
     assert_eq!(vec, slice);
 }
+
+#[test]
+fn test_u8_upper_limit_encode_err() {
+    let vec = vec![0u32; 100];
+    assert!(vec.encode::<u8>().is_err());
+}
+
+#[test]
+fn test_decode_limit_err() {
+    let vec = vec![0u32; 100];
+    let bytes = vec.encode::<u32>().unwrap();
+    assert!(<Vec<u32>>::decode_max::<u32>(&bytes, 100).is_err());
+}

@@ -1,5 +1,5 @@
 use traits::{ByteEncodable, ByteDecodable};
-use errors::{ByteVecError, BVWantedSize};
+use errors::{ByteVecError, BVExpectedSize};
 use std::mem::transmute;
 use {BVEncodeResult, BVDecodeResult, BVSize};
 use std::mem::size_of;
@@ -34,7 +34,7 @@ macro_rules! impl_integrals {
                         unsafe { Ok(<$t>::from_le(transmute(t_bytes))) }
                     } else {
                         Err(ByteVecError::BadSizeDecodeError {
-                            wanted: BVWantedSize::EqualTo($size as usize),
+                            expected: BVExpectedSize::EqualTo($size as usize),
                             actual: bytes.len()
                         })
                     }

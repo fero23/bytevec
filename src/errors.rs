@@ -4,10 +4,11 @@ use std::error::Error;
 use std::fmt::{self, Display};
 
 use self::ByteVecError::*;
-use self::BVWantedSize::*;
+use self::BVExpectedSize::*;
 
 #[derive(Debug, Clone, Copy)]
-pub enum BVWantedSize {
+pub enum BVExpectedSize {
+    LessOrEqualThan(usize),
     MoreThan(usize),
     EqualTo(usize),
 }
@@ -16,7 +17,7 @@ pub enum BVWantedSize {
 pub enum ByteVecError {
     StringDecodeUtf8Error(Utf8Error),
     BadSizeDecodeError {
-        wanted: BVWantedSize,
+        expected: BVExpectedSize,
         actual: usize,
     },
     OverflowError,
@@ -26,20 +27,21 @@ impl Display for ByteVecError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             StringDecodeUtf8Error(utf8_error) => write!(f, "StringDecodeUtf8Error: {}", utf8_error),
-            BadSizeDecodeError { wanted, actual } => {
+            BadSizeDecodeError { expected, actual } => {
                 write!(f,
-                       "The size specified for the structure is {}, but the size of the given \
+                       "The size expected for the structure is {}, but the size of the given \
                         buffer is {}",
-                       match wanted {
-                           MoreThan(wanted) => format!("more than {}", wanted),
-                           EqualTo(wanted) => wanted.to_string(),
+                       match expected {
+                           LessOrEqualThan(expected) => format!("less or equal than {}", expected),
+                           MoreThan(expected) => format!("more than {}", expected),
+                           EqualTo(expected) => expected.to_string(),
                        },
                        actual)
             }
             OverflowError => {
                 write!(f,
-                       "OverflowError: The size of the data structure surpasses the u32 max size \
-                        (4GB)")
+                       "OverflowError: The size of the data structure surpasses the \
+                       max value of the integral generic type")
             }
         }
     }
@@ -52,7 +54,7 @@ impl Error for ByteVecError {
             BadSizeDecodeError { .. } => {
                 "the size specified for the structure differs from the size of the given buffer"
             }
-            OverflowError => "the size of the data structure surpasses the u32 max size",
+            OverflowError => "the size of the data structure surpasses max value of the size type",
         }
     }
 
