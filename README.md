@@ -25,7 +25,7 @@ the functions automatically, as every type has its quirks. This library
 uses two traits to give a type the functionality it needs to do that: 
 `ByteEncodable` and `ByteDecodable`.
 
-###The `ByteEncodable` trait
+### The `ByteEncodable` trait
 A type that implements this trait is able to use the `encode` method that 
 yields a `Vec<u8>` byte sequence. Seems prone to failure right? Of course it is,
 internally it uses `unsafe` blocks to extract the bytes of a given type, so 
@@ -54,7 +54,7 @@ For collections and other structures, automatic implementation of bytevec
 requires that all of its underlying elements implement the `ByteEncodable`
 trait.
 
-###The bytevec serialization format
+### The bytevec serialization format
 bytevec doesn't follow any particular serialization format. It follows simple
 rules when translating some type value to bytes:
 - For a primitive type such as the integral types, floating points
@@ -86,7 +86,7 @@ is the order of deserialization.
 `ByteEncodable` containing a `Vec`, `String`, or another structure that also implements
 `ByteEncodable` will be serialized along all its fields.
 
-###The `ByteDecodable` trait
+### The `ByteDecodable` trait
 Given a byte vector retrieved from memory, a file, or maybe a TCP connection,
 the user will be able to pass the vector to the `decode` method of
 a type that implements the `ByteDecodable` trait. `decode` will do a few checks 
@@ -110,7 +110,7 @@ a `limit` argument. This parameter is compared to the length of the `u8` buffer 
 if the buffer length is greater than it, it will return a `BadSizeDecodeError`,
 otherwise it will return the result of `decode` on the byte buffer.
 
-###Example: Serialization and deserialization of a slice
+### Example: Serialization and deserialization of a slice
 
 ```rust
 let slice = &["Rust", "Is", "Awesome!"];
@@ -119,7 +119,7 @@ let vec = <Vec<String>>::decode::<u32>(&bytes).unwrap();
 assert_eq!(vec, slice);
 ```
 
-###The `bytevec_decl` macro
+### The `bytevec_decl` macro
 This macro allows the user to declare an arbitrary number of structures that
 automatically implement both the `ByteEncodable` and `ByteDecodable` traits,
 as long as all of the fields also implement both traits.
@@ -146,7 +146,7 @@ fn main() {
 }
 ```
 
-###The `bytevec_impls` macro
+### The `bytevec_impls` macro
 
 This macro implements both the `ByteEncodable` and `ByteDecodable` traits
 for the given `struct` definitions. This macro does not declare the `struct`
@@ -190,14 +190,14 @@ fn main() {
 }
 ```
 
-####This all sounds like your usual serialization library, but why bother with bytes?
+#### This all sounds like your usual serialization library, but why bother with bytes?
 bytevec certainly isn't for everyone. It isn't a full serialization library like
 [rustc_serialize] or [serde], nor is it trying to become one. This is for the people
 that for any reason can't handle text based serialization and just need 
 to get some bytes fast and recreate an object out of them with low overhead through the use
 of a small crate with no dependencies.
 
-##License
+## License
 This library is distributed under both the MIT license and the Apache License (Version 2.0).
 You are free to use any of them as you see fit.
 
