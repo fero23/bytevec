@@ -75,11 +75,10 @@ macro_rules! bytevec_impls {
                         let mut bytes = Vec::new();
                         $(
                             let field_size: Option<Size> = self.$field.get_size::<Size>();
-                            bytes.extend_from_slice(&try!(
-                                field_size.unwrap().encode::<Size>()));
+                            bytes.extend_from_slice(&field_size.unwrap().encode::<Size>()?);
                         )*
                         $(
-                            bytes.extend_from_slice(&try!(self.$field.encode::<Size>()));
+                            bytes.extend_from_slice(&self.$field.encode::<Size>()?);
                         )*
                         Ok(bytes)
                     } else {
@@ -98,8 +97,8 @@ macro_rules! bytevec_impls {
                     $(
                         if bytes[index..].len() >= Size::get_size_of().as_usize() {
                             sizes.insert(stringify!($field),
-                                try!(Size::decode::<Size>(
-                                    &bytes[index..index + Size::get_size_of().as_usize()])));
+                                Size::decode::<Size>(
+                                    &bytes[index..index + Size::get_size_of().as_usize()])?);
                             index += Size::get_size_of().as_usize();
                         }
                         else {
@@ -117,8 +116,8 @@ macro_rules! bytevec_impls {
                             $(
                                 $field: {
                                     let size = sizes[stringify!($field)].as_usize();
-                                    let field = try!(<$t as $crate::ByteDecodable>::decode::<Size>(
-                                        &bytes[index..index + size]));
+                                    let field = <$t as $crate::ByteDecodable>::decode::<Size>(
+                                        &bytes[index..index + size])?;
                                     index += size;
                                     field
                                 },

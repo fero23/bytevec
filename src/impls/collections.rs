@@ -7,15 +7,15 @@ use std::hash::Hash;
 macro_rules! validate_collection {
     ($byte_vec:ident, $index:ident, $len:ident, $size_vec:ident, $ret:expr) => {{
         if $byte_vec.len() >= Size::get_size_of().as_usize() {
-            $len = try!(Size::decode::<Size>(
-                &$byte_vec[..Size::get_size_of().as_usize()])).as_usize();
+            $len = Size::decode::<Size>(
+                &$byte_vec[..Size::get_size_of().as_usize()])?.as_usize();
             $index = Size::get_size_of().as_usize();
             let sizes_len = $len * Size::get_size_of().as_usize();
             if $byte_vec[Size::get_size_of().as_usize()..].len() >= sizes_len {
                 $size_vec = Vec::new();
                 for _ in 0..$len {
-                    $size_vec.push(try!(Size::decode::<Size>(
-                        &$byte_vec[$index..$index + Size::get_size_of().as_usize()])));
+                    $size_vec.push(Size::decode::<Size>(
+                        &$byte_vec[$index..$index + Size::get_size_of().as_usize()])?);
                     $index += Size::get_size_of().as_usize();
                 }
                 let body_size = $size_vec.iter().fold(0, |acc, ref size| acc + size.as_usize());
@@ -100,7 +100,7 @@ impl ByteDecodable for String {
     fn decode<Size>(bytes: &[u8]) -> BVDecodeResult<String>
         where Size: BVSize + ByteDecodable
     {
-        Ok(try!(::std::str::from_utf8(bytes)).to_string())
+        Ok(::std::str::from_utf8(bytes)?.to_string())
     }
 }
 
@@ -125,13 +125,13 @@ macro_rules! collection_encode_impl {
         fn encode<Size>(&self) -> BVEncodeResult<Vec<u8>> where Size: BVSize + ByteEncodable {
             if self.get_size::<Size>().is_some() {
                 let mut bytes = Vec::new();
-                bytes.extend_from_slice(&try!((Size::from_usize(self.len())).encode::<Size>()));
+                bytes.extend_from_slice(&(Size::from_usize(self.len()).encode::<Size>()?));
                 for elem in self {
-                    bytes.extend_from_slice(&try!(
-                        (&elem).get_size::<Size>().unwrap().encode::<Size>()));
+                    bytes.extend_from_slice(
+                        &(&elem).get_size::<Size>().unwrap().encode::<Size>()?);
                 }
                 for elem in self {
-                    bytes.extend_from_slice(&try!((&elem).encode::<Size>()));
+                    bytes.extend_from_slice(&(&elem).encode::<Size>()?);
                 }
                 Ok(bytes)
             } else {
@@ -159,7 +159,7 @@ impl<T> ByteDecodable for Vec<T>
         validate_collection!(bytes, index, len, sizes, {
             let mut vec = Vec::with_capacity(len);
             for size in sizes.into_iter() {
-                vec.push(try!(T::decode::<Size>(&bytes[index..index + size.as_usize()])));
+                vec.push(T::decode::<Size>(&bytes[index..index + size.as_usize()])?);
                 index += size.as_usize();
             }
             Ok(vec)
@@ -191,7 +191,7 @@ impl<T> ByteDecodable for HashSet<T>
         validate_collection!(bytes, index, len, sizes, {
             let mut set = HashSet::with_capacity(len);
             for size in sizes.into_iter() {
-                set.insert(try!(T::decode::<Size>(&bytes[index..index + size.as_usize()])));
+                set.insert(T::decode::<Size>(&bytes[index..index + size.as_usize()])?);
                 index += size.as_usize();
             }
             Ok(set)
@@ -219,8 +219,7 @@ impl<K, V> ByteDecodable for HashMap<K, V>
         validate_collection!(bytes, index, len, sizes, {
             let mut map = HashMap::with_capacity(len);
             for size in sizes.into_iter() {
-                let (key, value) = try!(<(K, V)>::decode::<Size>(&bytes[index..index +
-                                                                               size.as_usize()]));
+                let (key, value) = <(K, V)>::decode::<Size>(&bytes[index..index + size.as_usize()])?;
                 map.insert(key, value);
                 index += size.as_usize();
             }
@@ -254,9 +253,9 @@ macro_rules! tuple_impls {
             fn encode<Size>(&self) -> BVEncodeResult<Vec<u8>> where Size: BVSize + ByteEncodable {
                 if self.get_size::<Size>().is_some() {
                     let mut bytes = Vec::new();
-                    bytes.extend_from_slice(&try!(
-                        self.0.get_size::<Size>().unwrap().encode::<Size>()));
-                    bytes.extend_from_slice(&try!(self.0.encode::<Size>()));
+                    bytes.extend_from_slice(&
+                        self.0.get_size::<Size>().unwrap().encode::<Size>()?);
+                    bytes.extend_from_slice(&self.0.encode::<Size>()?);
                     Ok(bytes)
                 } else {
                     Err(ByteVecError::OverflowError)
@@ -273,7 +272,7 @@ macro_rules! tuple_impls {
                 let size;
 
                 if bytes.len() >= Size::get_size_of().as_usize() {
-                    size = try!(Size::decode::<Size>(&bytes[..Size::get_size_of().as_usize()]));
+                    size = Size::decode::<Size>(&bytes[..Size::get_size_of().as_usize()])?;
                 }
                 else {
                     return Err(ByteVecError::BadSizeDecodeError {
@@ -282,7 +281,7 @@ macro_rules! tuple_impls {
                     });
                 }
                 if size.as_usize() == bytes[Size::get_size_of().as_usize()..].len() {
-                    Ok((try!($t::decode::<Size>(&bytes[Size::get_size_of().as_usize()..])),))
+                    Ok(($t::decode::<Size>(&bytes[Size::get_size_of().as_usize()..])?,))
                 } else {
                     Err(ByteVecError::BadSizeDecodeError {
                         expected: BVExpectedSize::EqualTo(
@@ -341,15 +340,14 @@ macro_rules! tuple_impls {
                 if self.get_size::<Size>().is_some() {
                     let &&($elem, $($_elem),*) = self;
                     let mut bytes = Vec::new();
-                    bytes.extend_from_slice(&try!(
-                        $elem.get_size::<Size>().unwrap().encode::<Size>()));
+                    bytes.extend_from_slice(&$elem.get_size::<Size>().unwrap().encode::<Size>()?);
                     $(
-                        bytes.extend_from_slice(&try!(
-                            $_elem.get_size::<Size>().unwrap().encode::<Size>()));
+                        bytes.extend_from_slice(&
+                            $_elem.get_size::<Size>().unwrap().encode::<Size>()?);
                     )*
-                    bytes.extend_from_slice(&try!($elem.encode::<Size>()));
+                    bytes.extend_from_slice(&$elem.encode::<Size>()?);
                     $(
-                        bytes.extend_from_slice(&try!($_elem.encode::<Size>()));
+                        bytes.extend_from_slice(&$_elem.encode::<Size>()?);
                     )*
                     Ok(bytes)
                 } else {
@@ -370,7 +368,7 @@ macro_rules! tuple_impls {
 
                 if bytes.len() >= Size::get_size_of().as_usize() {
                     sizes.insert(stringify!($elem),
-                        try!(Size::decode::<Size>(&bytes[..Size::get_size_of().as_usize()])));
+                        Size::decode::<Size>(&bytes[..Size::get_size_of().as_usize()])?);
                     index += Size::get_size_of().as_usize();
                 }
                 else {
@@ -382,8 +380,8 @@ macro_rules! tuple_impls {
                 $(
                     if bytes[index..].len() >= Size::get_size_of().as_usize() {
                         sizes.insert(stringify!($_elem),
-                            try!(Size::decode::<Size>(
-                                &bytes[index..index + Size::get_size_of().as_usize()])));
+                            Size::decode::<Size>(
+                                &bytes[index..index + Size::get_size_of().as_usize()])?);
                         index += Size::get_size_of().as_usize();
                     }
                     else {
@@ -398,14 +396,14 @@ macro_rules! tuple_impls {
                 if body_size == bytes[index..].len() {
                     Ok((
                         {
-                            let elem = try!($t::decode::<Size>(
-                                &bytes[index..index + sizes[stringify!($elem)].as_usize()]));
+                            let elem = $t::decode::<Size>(
+                                &bytes[index..index + sizes[stringify!($elem)].as_usize()])?;
                             index += sizes[stringify!($elem)].as_usize();
                             elem
                         },
                         $({
-                            let elem = try!($_t::decode::<Size>(
-                                &bytes[index..index + sizes[stringify!($_elem)].as_usize()]));
+                            let elem = $_t::decode::<Size>(
+                                &bytes[index..index + sizes[stringify!($_elem)].as_usize()])?;
                             index += sizes[stringify!($_elem)].as_usize();
                             elem
                         }),*
