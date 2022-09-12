@@ -79,7 +79,7 @@ macro_rules! as_unsized_impl {
                 fn decode<Size>(bytes: &[u8]) -> BVDecodeResult<$t>
                     where Size: BVSize + ByteDecodable
                 {
-                    let unsigned = try!(<$unsizd>::decode::<Size>(bytes));
+                    let unsigned = <$unsizd>::decode::<Size>(bytes)?;
                     unsafe { Ok(transmute(unsigned)) }
                 }
             }
@@ -117,9 +117,9 @@ impl ByteDecodable for usize {
         where Size: BVSize + ByteDecodable
     {
         Ok(match size_of::<usize>() {
-            2 => try!(u16::decode::<Size>(bytes)).as_usize(),
-            4 => try!(u32::decode::<Size>(bytes)).as_usize(),
-            8 => try!(u64::decode::<Size>(bytes)).as_usize(),
+            2 => u16::decode::<Size>(bytes)?.as_usize(),
+            4 => u32::decode::<Size>(bytes)?.as_usize(),
+            8 => u64::decode::<Size>(bytes)?.as_usize(),
             _ => panic!("unknown size for usize"),
         })
     }
